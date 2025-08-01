@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para Você ❤️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 1s ease, visibility 1s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-message {
+            font-size: 1.5rem;
+            color: #4a5568;
+            margin-bottom: 40px;
+            text-align: center;
+            font-weight: 300;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards 0.5s;
+        }
+
+        .progress-container {
+            width: 300px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 1s;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .loading-percentage {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #667eea;
+            font-weight: 500;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 1.2s;
+        }
+
+        .start-button {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            display: none;
+        }
+
+        .start-button.visible {
+            opacity: 1;
+            transform: translateY(0);
+            display: block;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-button:active {
+            transform: translateY(0);
+        }
+
+        .main-container {
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .main-container.visible {
+            opacity: 1;
+        }
+
+        .slideshow-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .slideshow-container {
+            position: relative;
+            width: 90vw;
+            max-width: 600px;
+            height: 80vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .slide.fade-out {
+            opacity: 0;
+            transform: scale(1.1);
+        }
+
+        .image-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .slide-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .slide-image:hover {
+            transform: scale(1.02);
+        }
+
+        .message-container {
+            padding: 30px;
+            text-align: center;
+            background: rgba(248, 250, 252, 0.8);
+            border-top: 1px solid rgba(226, 232, 240, 0.5);
+        }
+
+        .message {
+            font-size: 1.1rem;
+            color: #2d3748;
+            line-height: 1.6;
+            font-weight: 300;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards 0.5s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-button {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .nav-button:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-button:active {
+            transform: scale(0.95);
+        }
+
+        .nav-button svg {
+            width: 20px;
+            height: 20px;
+            fill: #4a5568;
+        }
+
+        .slide-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .dots-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .slideshow-wrapper {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .slideshow-container {
+                width: 95vw;
+                height: 75vh;
+                margin: 0 10px;
+            }
+
+            .nav-button {
+                width: 45px;
+                height: 45px;
+            }
+
+            .message {
+                font-size: 1rem;
+            }
+
+            .message-container {
+                padding: 20px;
+            }
+
+            .loading-message {
+                font-size: 1.3rem;
+                padding: 0 20px;
+            }
+
+            .progress-container {
+                width: 250px;
+            }
+
+            .mobile-nav {
+                display: flex;
+                gap: 30px;
+            }
+
+            .desktop-nav {
+                display: none;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-nav {
+                display: none;
+            }
+
+            .desktop-nav {
+                display: block;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .slideshow-container {
+                border-radius: 15px;
+                height: 70vh;
+            }
+
+            .slide-image {
+                border-radius: 10px;
+            }
+
+            .message {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-message">
+            Seu presente está carregando, aguarde... ❤️
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="loading-percentage" id="loadingPercentage">0%</div>
+        <button class="start-button" id="startButton" onclick="startSlideshow()">
+            Começar ✨
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container" id="mainContainer">
+        <div class="slideshow-wrapper">
+            <!-- Desktop Navigation - Left Arrow -->
+            <div class="desktop-nav">
+                <button class="nav-button prev-button" onclick="changeSlide(-1)">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="slideshow-container">
+                <div class="slide-counter">
+                    <span id="current-slide">1</span> / <span id="total-slides">9</span>
+                </div>
+
+                <!-- Slide 1 -->
+                <div class="slide active">
+                    <div class="image-container">
+                        <img src="img/img1.jpg" class="slide-image">
+                    </div>
+                    <div class="message-container">
+                        <div class="message">
+                            "Toda história tem um início, e naquele instante, sem perceber, comecei a escrever o capítulo mais bonito da minha vida"
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="slide">
+                    <div class="image-container">
+                        <img src="img/img2.JPG" class="slide-image">
+                    </div>
+                    <div class="message-container">
+                        <div class="message">
+                            "E após um ano de aventuras, risadas e amor, a palavra que define tudo que vivemos é gratidão!"
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="slide">
+                    <div class="image-container">
+                        <img src="img/img4.png" class="slide-image">
+                    </div>
+                    <div class="message-container">
+                        <div class="message">
+                            "Gratidão por me mostrar que a vida é feita de momentos simples, mas que com você se tornam extraordinários."
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4 -->
+                <div class="slide">
+                    <div class="image-container">
+                        <img src="img/img5.jpg" class="slide-image">
+                    </div>
+                    <div class="message-container">
+                        <div class="message">
+                            "Gratidão por me fazer entendender que nem tudo precisa ser perfeito para ser maravilhoso!"
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5 -->
+                <div class="slide">
+                    <div class="image-container">
+                        <img src="img/img6.jpg" class="slide-image">
+                    </div>
+                    <div class="message-container">
+                        <div class="message">
+                            "Mas que cada dia ao seu lado é uma oportunidade de aprender, crescer e sonhar."
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 6 -->
+                <div class="slide">
+                    <div class="image-container">
+                        <img src="img/img7.jpg" class="slide-image">
+                    </div>
+                    <div class="message-container">
+                        <div class="message">
+                            "Em um mundo tão ruim, é maravilhoso encontrar alguém que faz tudo parecer tão leve."
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 7 -->
+                <div class="slide">
+                    <div class="image-container">
+                        <img src="img/img3.jpg" class="slide-image">
+                    </div>
+                    <div class="message-container">
+                        <div class="message">
+                            "E por isso venho aqui hoje, para te agradecer por cada sorriso, cada abraço e cada momento que compartilhamos.
+                            E te dizer que espero que essa data seja eterna e que possamos celebrar muitos outros anos juntos."
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 8 -->
+                <div class="slide">
+                    <div class="image-container">
+                        <img src="img/img8.jpg" class="slide-image">
+                    </div>
+                    <div class="message-container">
+                        <div class="message">
+                            "Obrigado por nunca desistir de mim, por me apoiar em todos os momentos e por ser a pessoa incrível que você é."
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slide">
+                    <div class="image-container">
+                        <img src="img/img9.jpg" class="slide-image">
+                    </div>
+                    <div class="message-container">
+                        <div class="message">
+                            "Eu te amo mil infinitos Gatona!!!!"
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dots Navigation -->
+                <div class="dots-container">
+                    <span class="dot active" onclick="currentSlide(1)"></span>
+                    <span class="dot" onclick="currentSlide(2)"></span>
+                    <span class="dot" onclick="currentSlide(3)"></span>
+                    <span class="dot" onclick="currentSlide(4)"></span>
+                    <span class="dot" onclick="currentSlide(5)"></span>
+                    <span class="dot" onclick="currentSlide(6)"></span>
+                    <span class="dot" onclick="currentSlide(7)"></span>
+                    <span class="dot" onclick="currentSlide(8)"></span>
+                    <span class="dot" onclick="currentSlide(9)"></span>
+                </div>
+            </div>
+
+            <!-- Desktop Navigation - Right Arrow -->
+            <div class="desktop-nav">
+                <button class="nav-button next-button" onclick="changeSlide(1)">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div class="mobile-nav">
+                <button class="nav-button prev-button-mobile" onclick="changeSlide(-1)">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                </button>
+                <button class="nav-button next-button-mobile" onclick="changeSlide(1)">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let slideIndex = 1;
+        const totalSlides = 9;
+        let isTransitioning = false;
+
+        // Loading Screen Logic
+        window.addEventListener('load', () => {
+            startLoading();
+        });
+
+        function startLoading() {
+            const progressBar = document.getElementById('progressBar');
+            const percentageElement = document.getElementById('loadingPercentage');
+            const startButton = document.getElementById('startButton');
+            
+            let progress = 0;
+            const duration = 8000; // 8 seconds
+            const increment = 100 / (duration / 50); // Update every 50ms
+            
+            const progressInterval = setInterval(() => {
+                progress += increment;
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                    
+                    // Show start button after loading completes
+                    setTimeout(() => {
+                        startButton.classList.add('visible');
+                    }, 500);
+                }
+                
+                progressBar.style.width = progress + '%';
+                percentageElement.textContent = Math.round(progress) + '%';
+            }, 50);
+        }
+
+        function startSlideshow() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const mainContainer = document.getElementById('mainContainer');
+            
+            loadingScreen.classList.add('hidden');
+            mainContainer.classList.add('visible');
+        }
+
+        function changeSlide(direction) {
+            if (isTransitioning) return;
+            
+            const currentSlideElement = document.querySelector('.slide.active');
+            let newIndex = slideIndex + direction;
+            
+            if (newIndex > totalSlides) newIndex = 1;
+            if (newIndex < 1) newIndex = totalSlides;
+            
+            showSlide(newIndex);
+        }
+
+        function currentSlide(index) {
+            if (isTransitioning) return;
+            showSlide(index);
+        }
+
+        function showSlide(index) {
+            if (index === slideIndex || isTransitioning) return;
+            
+            isTransitioning = true;
+            const currentSlideElement = document.querySelector('.slide.active');
+            const newSlideElement = document.querySelectorAll('.slide')[index - 1];
+            
+            // Fade out current slide
+            currentSlideElement.classList.add('fade-out');
+            currentSlideElement.classList.remove('active');
+            
+            setTimeout(() => {
+                // Reset current slide
+                currentSlideElement.classList.remove('fade-out');
+                
+                // Show new slide
+                newSlideElement.classList.add('active');
+                
+                // Update navigation
+                slideIndex = index;
+                updateNavigation();
+                
+                // Reset animation for message
+                const message = newSlideElement.querySelector('.message');
+                message.style.animation = 'none';
+                message.offsetHeight; // Trigger reflow
+                message.style.animation = 'fadeInUp 1s ease forwards 0.3s';
+                
+                setTimeout(() => {
+                    isTransitioning = false;
+                }, 100);
+            }, 400);
+        }
+
+        function updateNavigation() {
+            // Update counter
+            document.getElementById('current-slide').textContent = slideIndex;
+            
+            // Update dots
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === slideIndex - 1);
+            });
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Touch/swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    changeSlide(1); // Swipe left - next slide
+                } else {
+                    changeSlide(-1); // Swipe right - previous slide
+                }
+            }
+        }
+    </script>
+</body>
+</html>
